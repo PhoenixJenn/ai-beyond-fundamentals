@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -44,9 +45,19 @@ def call_gemini():
         "usage": resp.usage_metadata.model_dump(mode="json", exclude_none=True),
     }
 
+def call_ollama():
+    from openai import OpenAI
+    local = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")  # key is unused but required by the SDK
+    resp = local.chat.completions.create(
+        model="qwen3-vl:4b-instruct",  # or whichever model `ollama list` shows on your machine
+        messages=[{"role": "user", "content": PROMPT}],
+    )
+    usage = resp.usage.model_dump(mode="json", exclude_none=True) if resp.usage else None
+    return {"text": resp.choices[0].message.content, "usage": usage}
+
 if __name__ == "__main__":
     results = {}
-    for name, call in [("anthropic", call_anthropic), ("openai", call_openai), ("gemini", call_gemini)]:
+    for name, call in [("anthropic", call_anthropic), ("openai", call_openai), ("gemini", call_gemini), ("ollama", call_ollama)]:
         try:
             results[name] = call()
         except Exception as e:
@@ -54,10 +65,12 @@ if __name__ == "__main__":
             results[name] = {"error": f"{type(e).__name__}: {e}"}
     output = json.dumps(results, indent=2)
     print(output)
-    with open("lab2-output.json", "w") as f:
+    filename = f"lab2-output-{datetime.now():%Y%m%d-%H%M%S}.json"  # a new file every run
+    with open(filename, "w") as f:
         f.write(output + "\n")
+    print("saved to", filename)
 
-        # usage field names, from lab2-output.json:
+        # usage field names, from the lab2-output-*.json file:
 #   anthropic: input_tokens: 22 / output_tokens: 109
 #   openai:    prompt_tokens: 16  / completion_tokens: 90
 #   gemini:    prompt_token_count: 11 / candidates_token_count: 85

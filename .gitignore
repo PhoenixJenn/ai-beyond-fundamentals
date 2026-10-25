@@ -4,3 +4,4 @@ __pycache__/
 *.log
 *.jsonl
 PROGRESS.md
+lab2*output*
