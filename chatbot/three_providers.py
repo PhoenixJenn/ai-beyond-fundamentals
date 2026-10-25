@@ -56,3 +56,8 @@ if __name__ == "__main__":
     print(output)
     with open("lab2-output.json", "w") as f:
         f.write(output + "\n")
+
+        # usage field names, from lab2-output.json:
+#   anthropic: input_tokens: 22 / output_tokens: 109
+#   openai:    prompt_tokens: 16  / completion_tokens: 90
+#   gemini:    prompt_token_count: 11 / candidates_token_count: 85
